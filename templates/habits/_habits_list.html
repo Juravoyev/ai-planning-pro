@@ -1,0 +1,74 @@
+{% load habit_tags %}
+<!-- Odatlar -->
+<div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <h3 style="font-size:15px;font-weight:700;">🔥 Odatlarim</h3>
+        <button onclick="document.getElementById('addModal').classList.add('open')" class="btn btn-primary" style="font-size:13px;padding:8px 16px;">+ Yangi Odat</button>
+    </div>
+
+    {% if habits_data %}
+    <div style="display:flex;flex-direction:column;gap:12px;">
+        {% for item in habits_data %}
+        <div class="habit-item {% if item.done_today %}habit-done{% endif %}" id="habit-{{ item.habit.id }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:46px;height:46px;border-radius:12px;background:{% if item.done_today %}rgba(6,214,160,.15){% else %}#F3F4F6{% endif %};display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;transition:all .2s;">
+                        {{ item.habit.icon }}
+                    </div>
+                    <div>
+                        <div style="font-size:15px;font-weight:700;color:#2D2D3A;">{{ item.habit.name }}</div>
+                        <div style="font-size:12px;color:#9CA3AF;margin-top:2px;display:flex;align-items:center;gap:8px;">
+                            <span>🔥 {{ item.habit.streak }} kunlik streak</span>
+                            <span>·</span>
+                            <span>📊 {{ item.completion_rate }}% (30 kun)</span>
+                        </div>
+                    </div>
+                </div>
+                <form action="{% url 'habit_delete' item.habit.id %}" method="post" class="habit-delete-form" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary btn-sm" style="color:#E74C3C;" title="O'chirish">🗑️</button>
+                </form>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+                {% for day in item.days %}
+                <button
+                    class="day-btn {% if day.done %}day-done{% endif %} {% if day.is_today %}day-today{% endif %}"
+                    onclick="toggleHabit({{ item.habit.id }}, '{{ day.date_str }}', this)"
+                    title="{{ day.date }}">
+                    <span style="font-size:10px;display:block;font-weight:600;margin-bottom:2px;">{{ day.day_name }}</span>
+                    <span style="font-size:11px;">{{ day.date|date:"d" }}</span>
+                    {% if day.done %}<span style="font-size:14px;display:block;">✓</span>{% else %}<span style="font-size:14px;display:block;opacity:.3;">○</span>{% endif %}
+                </button>
+                {% endfor %}
+
+                <button
+                    class="day-btn-today {% if item.done_today %}day-done{% endif %}"
+                    onclick="toggleHabit({{ item.habit.id }}, '{{ today|date:'Y-m-d' }}', this)"
+                    id="today-btn-{{ item.habit.id }}">
+                    {% if item.done_today %}✅ Bajarildi{% else %}☐ Bugun{% endif %}
+                </button>
+            </div>
+
+            <div style="margin-top:12px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:#9CA3AF;margin-bottom:4px;">
+                    <span>30 kunlik natija</span>
+                    <span>{{ item.done_last30 }}/30 kun</span>
+                </div>
+                <div style="height:6px;background:#F3F4F6;border-radius:3px;overflow:hidden;">
+                    <div style="height:100%;width:{{ item.completion_rate }}%;background:{% if item.completion_rate >= 70 %}#06d6a0{% elif item.completion_rate >= 40 %}#ffbe0b{% else %}#f72585{% endif %};border-radius:3px;transition:width .3s;"></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:60px 20px;">
+        <div style="font-size:56px;margin-bottom:16px;">🔥</div>
+        <div style="font-size:18px;font-weight:700;color:#2D2D3A;margin-bottom:8px;">Hali odat yo'q</div>
+        <div style="font-size:14px;color:#9CA3AF;margin-bottom:20px;">Birinchi odatingizni qo'shing va har kuni kuzatib boring</div>
+        <button onclick="document.getElementById('addModal').classList.add('open')" class="btn btn-primary">+ Yangi Odat Qo'shish</button>
+    </div>
+    {% endif %}
+</div>
+

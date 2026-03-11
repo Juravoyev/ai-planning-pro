@@ -1,0 +1,66 @@
+{% if goals %}
+<div class="grid-3">
+    {% for goal in goals %}
+    <div class="goal-card premium-card fade-in" id="goal-card-{{ goal.id }}">
+        <div class="goal-header">
+            <div class="goal-meta-top">
+                <span class="goal-category-pill">{{ goal.get_category_display }}</span>
+                <span class="badge badge-{{ goal.status }}">{{ goal.get_status_display }}</span>
+            </div>
+            <div class="goal-dropdown">
+                <button class="goal-dots-btn">•••</button>
+                <div class="goal-dropdown-content">
+                    <button type="button" class="goal-edit-btn" data-goal-id="{{ goal.id }}">✏️ Tahrirlash</button>
+                    <button type="button" class="goal-delete-btn" data-goal-id="{{ goal.id }}">🗑️ O'chirish</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="goal-body">
+            <h3 class="goal-title">
+                <a href="{% url 'goal_detail' goal.id %}">{{ goal.title }}</a>
+            </h3>
+            {% if goal.description %}
+            <p class="goal-desc">{{ goal.description|truncatechars:80 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="goal-footer">
+            <div class="goal-progress-section">
+                <div class="goal-progress-info">
+                    <span class="progress-label">Progress</span>
+                    <span class="progress-percent">{{ goal.progress }}%</span>
+                </div>
+                <div class="premium-progress-bar">
+                    <div class="premium-progress-fill" style="width:{{ goal.progress }}%;"></div>
+                </div>
+            </div>
+
+            <div class="goal-stats-row">
+                {% if goal.deadline %}
+                <div class="goal-stat-item {% if goal.is_overdue %}overdue{% endif %}">
+                    <i class="far fa-calendar-alt"></i>
+                    <span>{{ goal.deadline|date:"d.m.Y" }}</span>
+                </div>
+                {% endif %}
+                <div class="goal-stat-item">
+                    <i class="fas fa-tasks"></i>
+                    <span>{{ goal.tasks.count }} ta vazifa</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="goal-card-actions">
+            <a href="{% url 'goal_detail' goal.id %}" class="btn btn-primary btn-sm btn-full">Ko'rish</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state premium-empty">
+    <div class="empty-icon-wrapper">🎯</div>
+    <h3 class="empty-title">Hozircha maqsadlar yo'q</h3>
+    <p class="empty-text">Katta maqsadlaringizni qo'ying va ularga qarab intiling!</p>
+    <button type="button" class="btn btn-primary goal-add-btn">+ Birinchi maqsadni qo'shish</button>
+</div>
+{% endif %}

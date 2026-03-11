@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ task.title }} - AI Planner{% endblock %}
+{% block header_title %}Vazifa tafsiloti{% endblock %}
+
+{% block content %}
+<div style="max-width:700px; margin:0 auto;">
+    <div class="page-header">
+        <a href="{% url 'task_list' %}" class="btn btn-secondary">← Orqaga</a>
+        <div style="display:flex; gap:8px;">
+            <a href="{% url 'task_edit' task.id %}" class="btn btn-primary">✏️ Tahrirlash</a>
+            <a href="{% url 'task_delete' task.id %}" class="btn btn-secondary">🗑️</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+            <h2 style="font-size:20px; font-weight:700;">{{ task.title }}</h2>
+            <span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span>
+        </div>
+
+        {% if task.description %}
+        <p style="color:#6B7280; margin-bottom:20px; line-height:1.6;">{{ task.description }}</p>
+        {% endif %}
+
+        <div class="grid-2" style="gap:12px;">
+            <div style="padding:14px; background:#F8F9FD; border-radius:10px;">
+                <div style="font-size:12px; color:#9CA3AF; margin-bottom:4px;">MUHIMLIK</div>
+                <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+            </div>
+            <div style="padding:14px; background:#F8F9FD; border-radius:10px;">
+                <div style="font-size:12px; color:#9CA3AF; margin-bottom:4px;">KATEGORIYA</div>
+                <div style="font-weight:500;">{{ task.get_category_display }}</div>
+            </div>
+            {% if task.due_date %}
+            <div style="padding:14px; background:#F8F9FD; border-radius:10px;">
+                <div style="font-size:12px; color:#9CA3AF; margin-bottom:4px;">MUDDAT</div>
+                <div style="font-weight:500; {% if task.is_overdue %}color:#E74C3C;{% endif %}">
+                    {{ task.due_date|date:"d.m.Y" }}
+                    {% if task.due_time %} {{ task.due_time|time:"H:i" }}{% endif %}
+                    {% if task.is_overdue %} ⚠️{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% if task.estimated_minutes %}
+            <div style="padding:14px; background:#F8F9FD; border-radius:10px;">
+                <div style="font-size:12px; color:#9CA3AF; margin-bottom:4px;">TAXMINIY VAQT</div>
+                <div style="font-weight:500;">⏱ {{ task.estimated_minutes }} daqiqa</div>
+            </div>
+            {% endif %}
+            {% if task.goal %}
+            <div style="padding:14px; background:#EEF0FF; border-radius:10px;">
+                <div style="font-size:12px; color:#9CA3AF; margin-bottom:4px;">BOG'LIQ MAQSAD</div>
+                <a href="{% url 'goal_detail' task.goal.id %}" style="font-weight:500; color:#6C63FF; text-decoration:none;">
+                    🎯 {{ task.goal.title }}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if task.status != 'completed' %}
+        <div style="margin-top:20px; padding-top:20px; border-top:1px solid #E5E7EB;">
+            <form action="{% url 'task_complete' task.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">✅ Bajarildi deb belgilash</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

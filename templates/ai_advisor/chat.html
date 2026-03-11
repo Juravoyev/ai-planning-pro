@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Maslahat - AI Planner{% endblock %}
+{% block header_title %}🤖 AI Maslahat{% endblock %}
+
+{% block content %}
+<div class="ai-page-shell">
+    <section class="ai-hero card">
+        <div>
+            <span class="ai-kicker">AI Assistant</span>
+            <h1 class="page-title">AI Maslahat markazi</h1>
+            <p class="page-subtitle">Kunlik reja, samaradorlik va maqsadlar bo'yicha bitta joydan tez maslahat oling.</p>
+        </div>
+        <div class="ai-actions">
+            <a href="{% url 'ai_daily_plan' %}" class="btn btn-outline">📋 Kunlik reja</a>
+            <a href="{% url 'ai_productivity' %}" class="btn btn-secondary">🚀 Samaradorlik</a>
+            <a href="{% url 'ai_history' %}" class="btn btn-secondary">📜 Tarix</a>
+        </div>
+    </section>
+
+    <div class="grid-2 ai-layout">
+        <div class="card ai-chat-card">
+            <div class="ai-chat-topbar">
+                <div class="ai-chat-profile">
+                    <div class="ai-orb">🤖</div>
+                    <div>
+                        <div class="ai-chat-name">AI Yordamchi</div>
+                        <div class="ai-chat-status">Online va tayyor</div>
+                    </div>
+                </div>
+                <div class="ai-chat-chip">Gemini</div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message ai fade-in">
+                    <div class="message-avatar ai-avatar">🤖</div>
+                    <div class="message-bubble">
+                        Salom! Men sizning AI yordamchingizman 👋<br><br>
+                        Men sizga quyidagi yo'nalishlarda yordam bera olaman:<br>
+                        📋 Vazifalarni rejalashtirish<br>
+                        ⏰ Vaqtni samarali boshqarish<br>
+                        🎯 Maqsadlarga erishish strategiyasi<br>
+                        🚀 Samaradorlikni oshirish<br><br>
+                        Qanday yordam kerak?
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-wrapper">
+                <select id="adviceType" class="ai-select">
+                    {% for value, label in advice_types %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <form id="chatForm" class="ai-chat-form">
+                    {% csrf_token %}
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Savolingizni yozing..." autocomplete="off">
+                    <button type="submit" class="btn btn-primary ai-send-btn">Yuborish</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="ai-side-column">
+            <div class="card ai-side-card">
+                <h3 class="card-title">⚡ Tez maslahatlar</h3>
+                <div class="ai-quick-grid">
+                    <button class="quick-msg btn btn-secondary ai-quick-btn" data-msg="Bugungi kun uchun optimal ish rejasini tuzib ber">
+                        📅 Bugungi reja tuzish
+                    </button>
+                    <button class="quick-msg btn btn-secondary ai-quick-btn" data-msg="Samaradorligimni oshirish uchun 3 ta maslahat ber">
+                        🚀 Samaradorlik maslahati
+                    </button>
+                    <button class="quick-msg btn btn-secondary ai-quick-btn" data-msg="Kechikkan vazifalarim bor, ularni qanday tartibda bajarishim kerak?">
+                        ⚠️ Kechikkan vazifalar
+                    </button>
+                    <button class="quick-msg btn btn-secondary ai-quick-btn" data-msg="Maqsadlarimga tezroq erishish uchun qanday strategiya qo'llashim kerak?">
+                        🎯 Maqsadlarga erishish
+                    </button>
+                    <button class="quick-msg btn btn-secondary ai-quick-btn" data-msg="Dam olish va ish balansini qanday saqlashim kerak?">
+                        ⚖️ Work-life balance
+                    </button>
+                </div>
+            </div>
+
+            <div class="card ai-side-card ai-side-tips">
+                <h3 class="card-title">Tavsiyalar</h3>
+                <ul class="ai-tip-list">
+                    <li>Savolni konkret yozsangiz, javob aniqroq bo'ladi.</li>
+                    <li>Bir vaqtning o'zida bitta muammoni yuborish yaxshi natija beradi.</li>
+                    <li>Kunlik reja va samaradorlik sahifalari tayyor prompt bilan ishlaydi.</li>
+                </ul>
+            </div>
+
+            {% if recent_conversations %}
+            <div class="card ai-side-card">
+                <div class="ai-side-header">
+                    <h3 class="card-title">📜 So'nggi suhbatlar</h3>
+                    <a href="{% url 'ai_history' %}" class="ai-link">Barchasi</a>
+                </div>
+                <div class="ai-history-list">
+                    {% for conv in recent_conversations|slice:":5" %}
+                    <div class="ai-history-item">
+                        <div class="ai-history-question">{{ conv.user_message|truncatechars:60 }}</div>
+                        <div class="ai-history-meta">{{ conv.created_at|date:"d.m.Y H:i" }} · {{ conv.get_advice_type_display }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.quick-msg').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        const input = document.getElementById('chatInput');
+        input.value = this.dataset.msg;
+        input.focus();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - AI Planner{% endblock %}
+{% block header_title %}Dashboard 🏠{% endblock %}
+
+{% block content %}
+<div id="dashboardStats">
+    {% include 'dashboard/_stats.html' %}
+</div>
+
+<div id="dashboardTodayBlock">
+    {% include 'dashboard/_today_tasks.html' %}
+</div>
+
+<div id="dashboardUpcoming">
+    {% include 'dashboard/_upcoming_tasks.html' %}
+</div>
+
+<!-- AI maslahat qisqacha -->
+<div class="card ai-dashboard-promo">
+    <div class="ai-dashboard-promo-inner">
+        <div class="ai-dashboard-promo-icon">🤖</div>
+        <div style="flex:1;">
+            <h3 class="ai-dashboard-promo-title">AI Maslahat olish</h3>
+            <p class="ai-dashboard-promo-text">
+                Sun'iy intellekt sizning vazifalaringiz va maqsadlaringizni tahlil qilib, bugungi ish rejangizni tuzishga yordam beradi.
+            </p>
+            <div class="ai-actions">
+                <a href="{% url 'ai_chat' %}" class="btn btn-primary">🤖 AI bilan suhbat</a>
+                <a href="{% url 'ai_daily_plan' %}" class="btn btn-outline">📋 Kunlik reja olish</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

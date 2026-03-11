@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+{% load schedule_tags %}
+
+{% block title %}Mening Jadvalim - AI Planner{% endblock %}
+{% block header_title %}📅 Mening Jadvalim{% endblock %}
+
+{% block content %}
+
+<div id="scheduleInfoCards">
+    {% include 'schedule/_info_cards.html' %}
+</div>
+
+<div id="scheduleList">
+    {% include 'schedule/_schedule_list.html' %}
+</div>
+
+<div id="scheduleWeekGrid">
+    {% include 'schedule/_week_grid.html' %}
+</div>
+
+<!-- ADD MODAL -->
+<div class="sch-modal-bg" id="addModal" onclick="if(event.target===this)closeModal('addModal')">
+    <div class="sch-modal">
+        <div class="sch-modal-header">
+            <span>➕ Yangi Jadval</span>
+            <button onclick="closeModal('addModal')" style="background:none;border:none;font-size:18px;cursor:pointer;color:#9CA3AF;">✕</button>
+        </div>
+        <form method="post" action="{% url 'schedule_create' %}" id="addForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Jadval Nomi *</label>
+                <input class="form-input" name="title" required placeholder="Masalan: Matematika, Python kursi...">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group">
+                    <label class="form-label">Turi</label>
+                    <select class="form-input" name="type">
+                        <option value="class">🎓 Dars / Ta'lim</option>
+                        <option value="work">💼 Ish</option>
+                        <option value="personal">👤 Shaxsiy</option>
+                        <option value="gym">💪 Sport / Gym</option>
+                        <option value="other">📌 Boshqa</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Emoji</label>
+                    <input class="form-input" name="icon" maxlength="2" placeholder="🎓" value="🎓">
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group">
+                    <label class="form-label">Boshlanish *</label>
+                    <input type="time" class="form-input" name="start_time" value="08:30" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tugash *</label>
+                    <input type="time" class="form-input" name="end_time" value="10:00" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Manzil (ixtiyoriy)</label>
+                <input class="form-input" name="location" placeholder="Auditoriya yoki manzil">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tavsif (ixtiyoriy)</label>
+                <textarea class="form-input" name="description" rows="2" placeholder="Qo'shimcha ma'lumot..."></textarea>
+            </div>
+
+            <!-- Kunlar -->
+            <div class="form-group">
+                <label class="form-label">Qaysi Kunlarda? *</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    {% for day in days_order %}
+                    <label class="day-check-label" id="add_dl_{{ day }}">
+                        <input type="checkbox" name="days" value="{{ day }}"
+                            {% if day in 'monday,tuesday,wednesday,thursday,friday' %}checked{% endif %}
+                            onchange="toggleDayLabel(this)">
+                        {{ days_uz|get_item:day|slice:":2" }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Rang -->
+            <div class="form-group">
+                <label class="form-label">Rang</label>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;" id="addColorPicker">
+                    {% for key, val in color_choices %}
+                    <div class="color-pick {% if key == 'blue' %}color-pick-sel{% endif %}"
+                         style="background:{{ val }};"
+                         data-c="{{ key }}"
+                         onclick="pickColor(this,'addColorInput')"></div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="color" id="addColorInput" value="blue">
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+                <button type="button" onclick="closeModal('addModal')" class="btn btn-secondary">Bekor</button>
+                <button type="submit" class="btn btn-primary">➕ Yaratish</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="sch-modal-bg" id="editModal" onclick="if(event.target===this)closeModal('editModal')">
+    <div class="sch-modal">
+        <div class="sch-modal-header">
+            <span>✏️ Tahrirlash</span>
+            <button onclick="closeModal('editModal')" style="background:none;border:none;font-size:18px;cursor:pointer;color:#9CA3AF;">✕</button>
+        </div>
+        <form method="post" id="editForm" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Jadval Nomi *</label>
+                <input class="form-input" name="title" id="editTitle" required>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group">
+                    <label class="form-label">Turi</label>
+                    <select class="form-input" name="type" id="editType">
+                        <option value="class">🎓 Dars / Ta'lim</option>
+                        <option value="work">💼 Ish</option>
+                        <option value="personal">👤 Shaxsiy</option>
+                        <option value="gym">💪 Sport / Gym</option>
+                        <option value="other">📌 Boshqa</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Emoji</label>
+                    <input class="form-input" name="icon" id="editIcon" maxlength="2">
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group">
+                    <label class="form-label">Boshlanish *</label>
+                    <input type="time" class="form-input" name="start_time" id="editStart" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tugash *</label>
+                    <input type="time" class="form-input" name="end_time" id="editEnd" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Manzil</label>
+                <input class="form-input" name="location" id="editLoc">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tavsif</label>
+                <textarea class="form-input" name="description" id="editDesc" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Qaysi Kunlarda?</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;" id="editDaysWrap">
+                    {% for day in days_order %}
+                    <label class="day-check-label" id="edit_dl_{{ day }}">
+                        <input type="checkbox" name="days" value="{{ day }}" onchange="toggleDayLabel(this)">
+                        {{ days_uz|get_item:day|slice:":2" }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Rang</label>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;" id="editColorPicker">
+                    {% for key, val in color_choices %}
+                    <div class="color-pick"
+                         style="background:{{ val }};"
+                         data-c="{{ key }}"
+                         onclick="pickColor(this,'editColorInput')"></div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="color" id="editColorInput" value="blue">
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+                <button type="button" onclick="closeModal('editModal')" class="btn btn-secondary">Bekor</button>
+                <button type="submit" class="btn btn-primary">💾 Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<style>
+.sch-card {
+    background: white;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 14px;
+    padding: 16px;
+    transition: all .2s;
+}
+.sch-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+.sch-paused { opacity: .55; }
+
+/* Weekly grid table */
+.week-grid-table {
+    display: grid;
+    grid-template-columns: 54px repeat(7, 1fr);
+}
+.wgt-time-cell {
+    padding: 8px 6px;
+    font-size: 11px;
+    color: #9CA3AF;
+    font-weight: 600;
+    text-align: right;
+    border-right: 1px solid #F3F4F6;
+    border-bottom: 1px solid #F3F4F6;
+}
+.wgt-head-cell {
+    padding: 10px 6px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    border-bottom: 2px solid #E5E7EB;
+    color: #2D2D3A;
+    line-height: 1.3;
+}
+.wgt-today { color: #6C63FF !important; }
+.wgt-cell {
+    min-height: 36px;
+    border-right: 1px solid #F3F4F6;
+    border-bottom: 1px solid #F3F4F6;
+    padding: 2px;
+}
+.wgt-cell-today { background: rgba(108,99,255,.04); }
+.wgt-event {
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    border-radius: 4px;
+    padding: 2px 5px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: default;
+}
+
+/* Day check labels */
+.day-check-label {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid #E5E7EB;
+    background: #F3F4F6;
+    color: #6B7280;
+    transition: all .15s;
+    user-select: none;
+}
+.day-check-label input { display: none; }
+.day-check-label.selected {
+    background: #EEF0FF;
+    color: #6C63FF;
+    border-color: #6C63FF;
+}
+
+/* Color picker */
+.color-pick {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2.5px solid transparent;
+    transition: all .15s;
+}
+.color-pick:hover { transform: scale(1.15); }
+.color-pick-sel { border-color: #2D2D3A !important; transform: scale(1.15); }
+
+/* Modal */
+.sch-modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.sch-modal-bg.open { display: flex; }
+.sch-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.sch-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #F3F4F6;
+}
+</style>
+
+<script>
+function scheduleCsrfToken() {
+    if (window.getCookie) return window.getCookie('csrftoken');
+    const m = document.cookie.match(/csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+}
+
+async function refreshSchedulePartials() {
+    const res = await fetch('/schedule/partials/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await res.json();
+    if (!data.success) return;
+
+    const info = document.getElementById('scheduleInfoCards');
+    const list = document.getElementById('scheduleList');
+    const grid = document.getElementById('scheduleWeekGrid');
+    if (info) info.innerHTML = data.info_html;
+    if (list) list.innerHTML = data.list_html;
+    if (grid) grid.innerHTML = data.grid_html;
+}
+
+function scheduleToast(msg, type) {
+    if (window.showToast) {
+        window.showToast(msg, type);
+        return;
+    }
+    alert(msg);
+}
+
+// ─── AJAX TOGGLE (sahifa yangilanmaydi) ───
+function ajaxToggleSchedule(id, btn) {
+    fetch('/schedule/toggle/' + id + '/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': scheduleCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(r => r.json())
+    .then(async data => {
+        if (!data.success) return;
+        const isActive = data.is_active;
+        const card = document.getElementById('scd' + id);
+
+        btn.textContent = isActive ? '⏸' : '▶️';
+        btn.dataset.active = isActive ? 'true' : 'false';
+        if (card) card.classList.toggle('sch-paused', !isActive);
+
+        scheduleToast(isActive ? '▶️ Yoqildi' : '⏸ To\'xtatildi', 'info');
+        await refreshSchedulePartials();
+    });
+}
+
+// ─── AJAX DELETE (sahifa yangilanmaydi) ───
+function ajaxDeleteSchedule(id) {
+    if (!confirm('Bu jadvalni o\'chirasizmi?')) return;
+    fetch('/schedule/delete/' + id + '/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': scheduleCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(r => r.json())
+    .then(async data => {
+        if (!data.success) return;
+        scheduleToast(data.message || '🗑️ O\'chirildi', 'success');
+        await refreshSchedulePartials();
+    });
+}
+
+async function ajaxSubmitScheduleForm(form, modalId) {
+    const res = await fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': scheduleCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: new FormData(form)
+    });
+
+    let data = null;
+    try { data = await res.json(); } catch (e) {}
+
+    if (!res.ok || !data || !data.success) {
+        const err = (data && data.error) ? data.error : 'Xatolik yuz berdi';
+        scheduleToast('❌ ' + err, 'danger');
+        return;
+    }
+
+    scheduleToast(data.message || '✅ Saqlandi', 'success');
+    closeModal(modalId);
+    await refreshSchedulePartials();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const addForm = document.getElementById('addForm');
+    if (addForm) {
+        addForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            ajaxSubmitScheduleForm(addForm, 'addModal');
+        });
+    }
+    const editForm = document.getElementById('editForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            ajaxSubmitScheduleForm(editForm, 'editModal');
+        });
+    }
+});
+
+// Kunlar
+const DAYS_UZ = {
+    monday:'Dushanba', tuesday:'Seshanba', wednesday:'Chorshanba',
+    thursday:'Payshanba', friday:'Juma', saturday:'Shanba', sunday:'Yakshanba'
+};
+
+// Modal ochish/yopish
+function openAddModal() {
+    // Kunlarni reset
+    document.querySelectorAll('#addModal .day-check-label input').forEach(cb => {
+        const isWeekday = ['monday','tuesday','wednesday','thursday','friday'].includes(cb.value);
+        cb.checked = isWeekday;
+        cb.closest('.day-check-label').classList.toggle('selected', isWeekday);
+    });
+    document.getElementById('addModal').classList.add('open');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+}
+
+function openEditModal(id, title, type, icon, start, end, loc, desc, color, days) {
+    document.getElementById('editForm').action = '/schedule/edit/' + id + '/';
+    document.getElementById('editTitle').value = title;
+    document.getElementById('editType').value = type;
+    document.getElementById('editIcon').value = icon;
+    document.getElementById('editStart').value = start;
+    document.getElementById('editEnd').value = end;
+    document.getElementById('editLoc').value = loc;
+    document.getElementById('editDesc').value = desc;
+    document.getElementById('editColorInput').value = color;
+
+    // Rang tanlash
+    document.querySelectorAll('#editColorPicker .color-pick').forEach(el => {
+        el.classList.toggle('color-pick-sel', el.dataset.c === color);
+    });
+
+    // Kunlar
+    const daysList = days.split(',');
+    document.querySelectorAll('#editDaysWrap .day-check-label input').forEach(cb => {
+        cb.checked = daysList.includes(cb.value);
+        cb.closest('.day-check-label').classList.toggle('selected', cb.checked);
+    });
+
+    document.getElementById('editModal').classList.add('open');
+}
+
+function toggleDayLabel(cb) {
+    cb.closest('.day-check-label').classList.toggle('selected', cb.checked);
+}
+
+function pickColor(el, inputId) {
+    el.closest('[id$="ColorPicker"]').querySelectorAll('.color-pick').forEach(e => e.classList.remove('color-pick-sel'));
+    el.classList.add('color-pick-sel');
+    document.getElementById(inputId).value = el.dataset.c;
+}
+
+// Sahifa yuklanganda mavjud belgilangan kunlarni ko'rsatish
+document.querySelectorAll('.day-check-label input:checked').forEach(cb => {
+    cb.closest('.day-check-label').classList.add('selected');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+<!-- Statistika -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon purple">✅</div>
+        <div>
+            <div class="stat-value">{{ stats.total_tasks }}</div>
+            <div class="stat-label">Jami vazifalar</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">🎯</div>
+        <div>
+            <div class="stat-value">{{ stats.completion_rate }}%</div>
+            <div class="stat-label">Bajarilish darajasi</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon yellow">⏳</div>
+        <div>
+            <div class="stat-value">{{ stats.pending_tasks }}</div>
+            <div class="stat-label">Kutayotgan vazifalar</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon red">🚨</div>
+        <div>
+            <div class="stat-value">{{ stats.overdue_tasks }}</div>
+            <div class="stat-label">Kechikkan vazifalar</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue">🏆</div>
+        <div>
+            <div class="stat-value">{{ stats.total_goals }}</div>
+            <div class="stat-label">Jami maqsadlar</div>
+        </div>
+    </div>
+</div>
+

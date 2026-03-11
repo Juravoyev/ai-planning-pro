@@ -1,0 +1,382 @@
+{% extends 'base.html' %}
+
+{% block title %}Diqqat Rejimi - AI Planner{% endblock %}
+{% block header_title %}🧠 Diqqat Rejimi{% endblock %}
+
+{% block content %}
+<div style="max-width:680px;margin:0 auto;">
+
+    <!-- Taymer kartasi -->
+    <div class="card" style="text-align:center;padding:40px 30px;">
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:6px;">🧠 Diqqat Rejimi</h2>
+        <p style="color:#9CA3AF;font-size:14px;margin-bottom:36px;">Pomodoro texnikasi — fokusli ishlang, dam oling</p>
+
+        <!-- Davra taymer -->
+        <div class="focus-ring" id="focusRing">
+            <svg class="ring-svg" viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="88" fill="none" stroke="#F3F4F6" stroke-width="8"/>
+                <circle cx="100" cy="100" r="88" fill="none" stroke="url(#grad)" stroke-width="8"
+                    stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="0"
+                    id="ringProgress" style="transition:stroke-dashoffset 1s linear;transform:rotate(-90deg);transform-origin:center;"/>
+                <defs>
+                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#6C63FF"/>
+                        <stop offset="100%" style="stop-color:#f72585"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            <div class="ring-inner">
+                <div class="focus-time" id="focusTime">25:00</div>
+                <div class="focus-phase" id="focusPhase">Fokus</div>
+                <div class="focus-session" id="focusSession">1-sessiya</div>
+            </div>
+        </div>
+
+        <!-- Tugmalar -->
+        <div style="display:flex;gap:12px;justify-content:center;margin:28px 0 20px;">
+            <button onclick="startTimer()" id="btnStart" class="focus-btn focus-btn-primary">
+                ▶ Boshlash
+            </button>
+            <button onclick="pauseTimer()" id="btnPause" class="focus-btn focus-btn-secondary" style="display:none;">
+                ⏸ Pauza
+            </button>
+            <button onclick="resetTimer()" id="btnReset" class="focus-btn focus-btn-secondary">
+                ↺ Qayta
+            </button>
+        </div>
+
+        <!-- Sessiya nuqtalar -->
+        <div style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;" id="sessionDots">
+            <div class="session-dot active" id="dot1"></div>
+            <div class="session-dot" id="dot2"></div>
+            <div class="session-dot" id="dot3"></div>
+            <div class="session-dot" id="dot4"></div>
+        </div>
+
+        <!-- Vaqt tanlash -->
+        <div style="background:#F8F9FD;border-radius:12px;padding:16px;">
+            <div style="font-size:13px;font-weight:600;color:#6B7280;margin-bottom:12px;">⚙️ Vaqtni sozlash</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+                <div>
+                    <label style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;display:block;margin-bottom:4px;">Fokus (daq)</label>
+                    <input type="number" id="focusDuration" value="25" min="1" max="90" class="form-input" style="text-align:center;font-weight:700;" onchange="updateDurations()">
+                </div>
+                <div>
+                    <label style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;display:block;margin-bottom:4px;">Qisqa dam (daq)</label>
+                    <input type="number" id="shortBreak" value="5" min="1" max="30" class="form-input" style="text-align:center;font-weight:700;" onchange="updateDurations()">
+                </div>
+                <div>
+                    <label style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;display:block;margin-bottom:4px;">Uzun dam (daq)</label>
+                    <input type="number" id="longBreak" value="15" min="1" max="60" class="form-input" style="text-align:center;font-weight:700;" onchange="updateDurations()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bugungi statistika -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;">
+        <div class="card" style="padding:18px;text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:#6C63FF;" id="statSessions">0</div>
+            <div style="font-size:12px;color:#9CA3AF;font-weight:600;margin-top:4px;">Sessiyalar</div>
+        </div>
+        <div class="card" style="padding:18px;text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:#06d6a0;" id="statMinutes">0</div>
+            <div style="font-size:12px;color:#9CA3AF;font-weight:600;margin-top:4px;">Daqiqalar</div>
+        </div>
+        <div class="card" style="padding:18px;text-align:center;">
+            <div style="font-size:2rem;font-weight:800;color:#f72585;" id="statStreak">0</div>
+            <div style="font-size:12px;color:#9CA3AF;font-weight:600;margin-top:4px;">Streak</div>
+        </div>
+    </div>
+
+    <!-- Maslahatlar -->
+    <div class="card" style="margin-top:20px;">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:16px;">💡 Diqqat rejimi maslahatlari</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+                <span style="font-size:20px;">📱</span>
+                <div><strong style="font-size:13px;">Telefoni o'chiring</strong><br><span style="font-size:12px;color:#9CA3AF;">Sessiya davomida bildirishnomalarni o'chiring</span></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+                <span style="font-size:20px;">🎧</span>
+                <div><strong style="font-size:13px;">Quloqchin taqing</strong><br><span style="font-size:12px;color:#9CA3AF;">Lo-fi yoki oq shovqin diqqatni saqlaydi</span></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+                <span style="font-size:20px;">💧</span>
+                <div><strong style="font-size:13px;">Suv ichishni unutmang</strong><br><span style="font-size:12px;color:#9CA3AF;">Dam olish paytida suv iching</span></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+                <span style="font-size:20px;">✍️</span>
+                <div><strong style="font-size:13px;">Bitta vazifaga e'tibor bering</strong><br><span style="font-size:12px;color:#9CA3AF;">Multitasking samaradorlikni 40% kamaytiradi</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+.focus-ring {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 8px;
+}
+.ring-svg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+}
+.ring-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.focus-time {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6C63FF, #f72585);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-family: 'JetBrains Mono', monospace, sans-serif;
+    letter-spacing: -1px;
+    line-height: 1;
+}
+.focus-phase {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7280;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.focus-session {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-top: 4px;
+}
+
+.focus-btn {
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all .2s;
+    font-family: inherit;
+}
+.focus-btn-primary {
+    background: linear-gradient(135deg, #6C63FF, #f72585);
+    color: white;
+    box-shadow: 0 4px 20px rgba(108,99,255,.4);
+}
+.focus-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,.5); }
+.focus-btn-secondary {
+    background: #F3F4F6;
+    color: #374151;
+}
+.focus-btn-secondary:hover { background: #E5E7EB; }
+
+.session-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #E5E7EB;
+    transition: all .3s;
+}
+.session-dot.active { background: #6C63FF; transform: scale(1.3); }
+.session-dot.done { background: #06d6a0; }
+
+/* Break mode */
+body.break-mode .focus-time {
+    background: linear-gradient(135deg, #06d6a0, #5b7fff);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+</style>
+
+<script>
+// State
+const STATE = {
+    isRunning: false,
+    phase: 'focus', // focus | short | long
+    session: 1,
+    totalSessions: 4,
+    timer: null,
+    current: 25 * 60,
+    total: 25 * 60,
+    // Stats
+    completedSessions: parseInt(localStorage.getItem('focus_sessions') || '0'),
+    totalMinutes: parseInt(localStorage.getItem('focus_minutes') || '0'),
+};
+
+function getDurations() {
+    return {
+        focus: parseInt(document.getElementById('focusDuration').value) * 60,
+        short: parseInt(document.getElementById('shortBreak').value) * 60,
+        long: parseInt(document.getElementById('longBreak').value) * 60,
+    };
+}
+
+function updateDurations() {
+    if (!STATE.isRunning) {
+        const d = getDurations();
+        STATE.current = d.focus;
+        STATE.total = d.focus;
+        updateDisplay();
+    }
+}
+
+function updateDisplay() {
+    const m = Math.floor(STATE.current / 60);
+    const s = STATE.current % 60;
+    document.getElementById('focusTime').textContent =
+        String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+
+    // Progress ring — circumference: 2*π*88 ≈ 553
+    const pct = STATE.current / STATE.total;
+    const offset = 553 * pct;
+    document.getElementById('ringProgress').style.strokeDashoffset = 553 - offset;
+
+    // Phase label
+    const labels = { focus: '🧠 Fokus', short: '☕ Qisqa Dam', long: '🛌 Uzun Dam' };
+    document.getElementById('focusPhase').textContent = labels[STATE.phase] || 'Fokus';
+    document.getElementById('focusSession').textContent = STATE.session + '-sessiya';
+
+    // Tab title
+    document.title = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + ' — AI Planner';
+
+    // Stats
+    document.getElementById('statSessions').textContent = STATE.completedSessions;
+    document.getElementById('statMinutes').textContent = STATE.totalMinutes;
+    document.getElementById('statStreak').textContent = STATE.session - 1;
+
+    // Body class for color change
+    document.body.classList.toggle('break-mode', STATE.phase !== 'focus');
+}
+
+function startTimer() {
+    if (STATE.isRunning) return;
+    STATE.isRunning = true;
+    document.getElementById('btnStart').style.display = 'none';
+    document.getElementById('btnPause').style.display = 'inline-flex';
+
+    STATE.timer = setInterval(() => {
+        STATE.current--;
+        updateDisplay();
+        if (STATE.current <= 0) {
+            clearInterval(STATE.timer);
+            STATE.isRunning = false;
+            onPhaseEnd();
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    clearInterval(STATE.timer);
+    STATE.isRunning = false;
+    document.getElementById('btnStart').style.display = 'inline-flex';
+    document.getElementById('btnStart').textContent = '▶ Davom';
+    document.getElementById('btnPause').style.display = 'none';
+}
+
+function resetTimer() {
+    clearInterval(STATE.timer);
+    STATE.isRunning = false;
+    STATE.phase = 'focus';
+    STATE.session = 1;
+    const d = getDurations();
+    STATE.current = d.focus;
+    STATE.total = d.focus;
+    document.getElementById('btnStart').style.display = 'inline-flex';
+    document.getElementById('btnStart').textContent = '▶ Boshlash';
+    document.getElementById('btnPause').style.display = 'none';
+    updateDisplay();
+    updateDots();
+}
+
+function onPhaseEnd() {
+    beep();
+    document.getElementById('btnStart').style.display = 'inline-flex';
+    document.getElementById('btnStart').textContent = '▶ Boshlash';
+    document.getElementById('btnPause').style.display = 'none';
+
+    const d = getDurations();
+
+    if (STATE.phase === 'focus') {
+        // Sessiya tugadi
+        STATE.completedSessions++;
+        STATE.totalMinutes += parseInt(document.getElementById('focusDuration').value);
+        localStorage.setItem('focus_sessions', STATE.completedSessions);
+        localStorage.setItem('focus_minutes', STATE.totalMinutes);
+
+        // Nuqtani belgilash
+        const dot = document.getElementById('dot' + STATE.session);
+        if (dot) { dot.classList.remove('active'); dot.classList.add('done'); }
+
+        if (STATE.session >= STATE.totalSessions) {
+            // Uzun dam
+            STATE.phase = 'long';
+            STATE.current = d.long;
+            STATE.total = d.long;
+            showToast('🛌 Ajoyib! 4 sessiya tugadi. Uzun dam oling!');
+            STATE.session = 1;
+            updateDots();
+        } else {
+            // Qisqa dam
+            STATE.phase = 'short';
+            STATE.current = d.short;
+            STATE.total = d.short;
+            STATE.session++;
+            showToast('☕ Sessiya tugadi! Qisqa dam oling.');
+            updateDots();
+        }
+    } else {
+        // Dam tugadi — fokusga qayt
+        STATE.phase = 'focus';
+        STATE.current = d.focus;
+        STATE.total = d.focus;
+        showToast('🧠 Dam tugadi! Yangi sessiyani boshlang.');
+    }
+
+    updateDisplay();
+}
+
+function updateDots() {
+    for (let i = 1; i <= 4; i++) {
+        const dot = document.getElementById('dot' + i);
+        if (!dot) continue;
+        dot.className = 'session-dot';
+        if (i === STATE.session) dot.classList.add('active');
+    }
+}
+
+function beep() {
+    try {
+        const a = new AudioContext(), o = a.createOscillator(), g = a.createGain();
+        o.connect(g); g.connect(a.destination);
+        o.frequency.value = 660; o.type = 'sine';
+        g.gain.setValueAtTime(0.3, a.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 1.5);
+        o.start(); o.stop(a.currentTime + 1.5);
+    } catch(e) {}
+}
+
+function showToast(msg) {
+    const el = document.createElement('div');
+    el.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#1E1E2E;color:white;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:500;z-index:9999;animation:slideUp .3s ease;box-shadow:0 8px 30px rgba(0,0,0,.3);max-width:300px;';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => { el.style.opacity='0'; el.style.transform='translateY(10px)'; el.style.transition='all .3s'; setTimeout(() => el.remove(), 300); }, 4000);
+}
+
+// Init
+updateDisplay();
+</script>
+{% endblock %}

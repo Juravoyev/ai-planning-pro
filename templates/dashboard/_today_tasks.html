@@ -1,0 +1,84 @@
+<div class="grid-2">
+    <!-- Bugungi vazifalar -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">📅 Bugungi vazifalar</h3>
+            <button type="button" class="btn btn-primary btn-sm task-add-btn">+ Qo'shish</button>
+        </div>
+
+        {% if today_tasks %}
+        {% for task in today_tasks %}
+        <div class="task-item" id="dash-task-{{ task.id }}">
+            <div class="task-check {% if task.status == 'completed' %}completed{% endif %} task-complete-btn"
+                data-task-id="{{ task.id }}">
+                {% if task.status == 'completed' %}✓{% endif %}
+            </div>
+            <div class="task-content">
+                <div class="task-title {% if task.status == 'completed' %}completed-text{% endif %} task-complete-btn"
+                    data-task-id="{{ task.id }}" style="cursor:pointer;">
+                    {{ task.title }}
+                </div>
+                <div class="task-meta">
+                    <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                    {% if task.due_time %}<span>🕐 {{ task.due_time|time:"H:i" }}</span>{% endif %}
+                    {% if task.estimated_minutes %}<span>⏱ {{ task.estimated_minutes }} daqiqa</span>{% endif %}
+                </div>
+            </div>
+            <div class="task-actions">
+                <button type="button" class="btn btn-secondary btn-sm task-edit-btn"
+                    data-task-id="{{ task.id }}">✏️</button>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state" style="padding:30px 20px;">
+            <span class="empty-state-icon" style="font-size:40px;">🎉</span>
+            <div class="empty-state-title">Bugun hech narsa yo'q!</div>
+            <div class="empty-state-text">Yangi vazifa qo'shib boshlang</div>
+            <button type="button" class="btn btn-primary task-add-btn">+ Vazifa yaratish</button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Maqsadlar -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">🎯 Faol maqsadlar</h3>
+            <button type="button" class="btn btn-primary btn-sm goal-add-btn">+ Qo'shish</button>
+        </div>
+
+        {% if active_goals %}
+        {% for goal in active_goals %}
+        <div style="margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <a href="{% url 'goal_detail' goal.id %}"
+                    style="font-size:14px; font-weight:600; color:#2D2D3A; text-decoration:none;">
+                    {{ goal.title }}
+                </a>
+                <span style="font-size:13px; color:#6B7280;">{{ goal.progress }}%</span>
+            </div>
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar-fill" style="width:{{ goal.progress }}%;"></div>
+            </div>
+            {% if goal.deadline %}
+            <div style="font-size:12px; color:#9CA3AF; margin-top:4px;">
+                📅 Muddat: {{ goal.deadline|date:"d.m.Y" }}
+                {% if goal.is_overdue %}<span style="color:#E74C3C;"> (Kechikdi!)</span>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <a href="{% url 'goal_list' %}" class="btn btn-outline btn-sm"
+            style="width:100%; justify-content:center; margin-top:8px;">
+            Barcha maqsadlar →
+        </a>
+        {% else %}
+        <div class="empty-state" style="padding:30px 20px;">
+            <span class="empty-state-icon" style="font-size:40px;">🎯</span>
+            <div class="empty-state-title">Maqsad yo'q</div>
+            <div class="empty-state-text">Birinchi maqsadingizni qo'ying!</div>
+            <button type="button" class="btn btn-primary goal-add-btn">+ Maqsad yaratish</button>
+        </div>
+        {% endif %}
+    </div>
+</div>

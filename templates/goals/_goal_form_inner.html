@@ -1,0 +1,65 @@
+<form method="post" action="{% if goal %}{% url 'goal_edit' goal.id %}{% else %}{% url 'goal_create' %}{% endif %}">
+    {% csrf_token %}
+
+    <div class="form-group">
+        <label for="{{ form.title.id_for_label }}" class="form-label">Maqsad nomi</label>
+        {{ form.title }}
+        {% if form.title.errors %}
+        <div class="form-error">{{ form.title.errors }}</div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.description.id_for_label }}" class="form-label">Tavsif</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+        <div class="form-error">{{ form.description.errors }}</div>
+        {% endif %}
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="form-group">
+            <label for="{{ form.category.id_for_label }}" class="form-label">Kategoriya</label>
+            {{ form.category }}
+            {% if form.category.errors %}
+            <div class="form-error">{{ form.category.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.status.id_for_label }}" class="form-label">Holat</label>
+            {{ form.status }}
+            {% if form.status.errors %}
+            <div class="form-error">{{ form.status.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.deadline.id_for_label }}" class="form-label">Muddat</label>
+        {{ form.deadline }}
+        {% if form.deadline.errors %}
+        <div class="form-error">{{ form.deadline.errors }}</div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.why.id_for_label }}" class="form-label">Nima uchun bu muhim?</label>
+        {{ form.why }}
+        {% if form.why.errors %}
+        <div class="form-error">{{ form.why.errors }}</div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.reward.id_for_label }}" class="form-label">Mukofot</label>
+        {{ form.reward }}
+        {% if form.reward.errors %}
+        <div class="form-error">{{ form.reward.errors }}</div>
+        {% endif %}
+    </div>
+
+    <div class="modal-footer" style="margin-top:24px; display:flex; gap:12px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary modal-cancel-btn">Bekor qilish</button>
+        <button type="submit" class="btn btn-primary">{{ action|default:"Saqlash" }}</button>
+    </div>
+</form>

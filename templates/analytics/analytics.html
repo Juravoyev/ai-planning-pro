@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Tahlil - AI Planner{% endblock %}
+{% block header_title %}📊 Samaradorlik Tahlili{% endblock %}
+
+{% block content %}
+<div style="max-width:1000px;margin:0 auto;">
+
+<!-- Yuqori statistika -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+    <div class="card" style="padding:18px;text-align:center;">
+        <div style="font-size:2rem;font-weight:800;color:#6C63FF;">{{ total_tasks }}</div>
+        <div style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;margin-top:4px;">Jami Vazifalar</div>
+    </div>
+    <div class="card" style="padding:18px;text-align:center;">
+        <div style="font-size:2rem;font-weight:800;color:#06d6a0;">{{ done_tasks }}</div>
+        <div style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;margin-top:4px;">Bajarildi</div>
+    </div>
+    <div class="card" style="padding:18px;text-align:center;">
+        <div style="font-size:2rem;font-weight:800;color:#f72585;">{{ completion_pct }}%</div>
+        <div style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;margin-top:4px;">Tugallash</div>
+    </div>
+    <div class="card" style="padding:18px;text-align:center;">
+        <div style="font-size:2rem;font-weight:800;color:#ffbe0b;">{{ total_goals }}</div>
+        <div style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;margin-top:4px;">Maqsadlar</div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+
+    <!-- Kategoriyalar -->
+    <div class="card">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;">📂 Kategoriyalar</h3>
+        {% for cat in categories %}
+        <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="font-size:13px;font-weight:600;">{{ cat.label }}</span>
+                <span style="font-size:13px;font-weight:700;color:#6C63FF;">{{ cat.count }} ta</span>
+            </div>
+            <div style="height:8px;background:#F3F4F6;border-radius:4px;overflow:hidden;">
+                <div style="height:100%;width:{{ cat.pct }}%;background:{{ cat.color }};border-radius:4px;transition:width .5s;"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Umumiy holat -->
+    <div class="card" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">🎯 Umumiy Holat</h3>
+        <!-- Donut chart -->
+        <div style="position:relative;width:160px;height:160px;margin-bottom:16px;">
+            <svg viewBox="0 0 42 42" width="160" height="160">
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="#F3F4F6" stroke-width="4"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="url(#donutGrad)" stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-dasharray="{{ completion_pct }} {{ remaining_pct }}"
+                    stroke-dashoffset="25"
+                    style="transition:stroke-dasharray .5s;"/>
+                <defs>
+                    <linearGradient id="donutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#6C63FF"/>
+                        <stop offset="100%" style="stop-color:#06d6a0"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div style="font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#6C63FF,#06d6a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">{{ completion_pct }}%</div>
+                <div style="font-size:11px;color:#9CA3AF;">tugallandi</div>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;">
+            <div style="background:#F8F9FD;border-radius:10px;padding:12px;">
+                <div style="font-size:1.5rem;font-weight:800;color:#06d6a0;">{{ done_tasks }}</div>
+                <div style="font-size:11px;color:#9CA3AF;">Bajarildi</div>
+            </div>
+            <div style="background:#F8F9FD;border-radius:10px;padding:12px;">
+                <div style="font-size:1.5rem;font-weight:800;color:#ffbe0b;">{{ pending_tasks }}</div>
+                <div style="font-size:11px;color:#9CA3AF;">Qoldi</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Oxirgi 7 kun faolligi -->
+<div class="card" style="margin-bottom:20px;">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;">📅 Oxirgi 7 Kun Faolligi</h3>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;min-height:100px;">
+        {% for day in weekly_activity %}
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div style="font-size:12px;font-weight:700;color:#6C63FF;">{{ day.count }}</div>
+            <div style="width:100%;border-radius:6px 6px 0 0;background:{% if day.count > 0 %}linear-gradient(180deg,#6C63FF,#9b5de5){% else %}#F3F4F6{% endif %};min-height:8px;height:{{ day.height }}px;transition:height .5s;"></div>
+            <div style="font-size:11px;color:#9CA3AF;font-weight:600;">{{ day.name }}</div>
+            <div style="font-size:10px;color:#9CA3AF;">{{ day.date }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Ustuvorlik va Maqsadlar -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+    <!-- Ustuvorlik -->
+    <div class="card">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;">🚦 Ustuvorlik Bo'yicha</h3>
+        {% for p in priorities %}
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:{{ p.color }};flex-shrink:0;"></div>
+            <div style="flex:1;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                    <span style="font-size:13px;font-weight:600;">{{ p.label }}</span>
+                    <span style="font-size:12px;color:#9CA3AF;">{{ p.count }} ta</span>
+                </div>
+                <div style="height:6px;background:#F3F4F6;border-radius:3px;">
+                    <div style="height:100%;width:{{ p.pct }}%;background:{{ p.color }};border-radius:3px;"></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Maqsadlar -->
+    <div class="card">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;">🎯 Maqsadlar Holati</h3>
+        {% if goals %}
+        {% for g in goals %}
+        <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                <span style="font-size:13px;font-weight:600;">{{ g.icon }} {{ g.title|truncatechars:22 }}</span>
+                <span style="font-size:12px;font-weight:700;color:#6C63FF;">{{ g.progress }}%</span>
+            </div>
+            <div style="height:7px;background:#F3F4F6;border-radius:4px;">
+                <div style="height:100%;width:{{ g.progress }}%;background:linear-gradient(90deg,#6C63FF,#06d6a0);border-radius:4px;"></div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="text-align:center;padding:30px;color:#9CA3AF;">
+            <div style="font-size:32px;margin-bottom:8px;">🎯</div>
+            <div style="font-size:13px;">Hali maqsad yo'q</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Odatlar statistikasi -->
+{% if habits_stats %}
+<div class="card" style="margin-top:20px;">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:20px;">🔥 Odatlar (30 kunlik)</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+        {% for h in habits_stats %}
+        <div style="background:#F8F9FD;border-radius:12px;padding:14px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <span style="font-size:1.4rem;">{{ h.icon }}</span>
+                <div>
+                    <div style="font-size:13px;font-weight:700;">{{ h.name|truncatechars:18 }}</div>
+                    <div style="font-size:11px;color:#9CA3AF;">🔥 {{ h.streak }} kun streak</div>
+                </div>
+            </div>
+            <div style="height:6px;background:#E5E7EB;border-radius:3px;margin-bottom:6px;">
+                <div style="height:100%;width:{{ h.rate }}%;background:{% if h.rate >= 70 %}#06d6a0{% elif h.rate >= 40 %}#ffbe0b{% else %}#f72585{% endif %};border-radius:3px;"></div>
+            </div>
+            <div style="font-size:11px;color:#9CA3AF;">{{ h.done }}/30 kun — {{ h.rate }}%</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+</div>
+{% endblock %}

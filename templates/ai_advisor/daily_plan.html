@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Kunlik reja - AI Planner{% endblock %}
+{% block header_title %}📋 Kunlik reja{% endblock %}
+
+{% block content %}
+<div class="ai-page-shell ai-single-column">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Bugungi reja</h1>
+            <p class="page-subtitle">Bugungi ishlarni ustuvorlik bo'yicha tartiblang va fokusni yo'qotmang.</p>
+        </div>
+        <div class="ai-actions">
+            <a href="{% url 'ai_chat' %}" class="btn btn-secondary">← Orqaga</a>
+            <a href="{% url 'ai_daily_plan' %}" class="btn btn-outline">Yangilash</a>
+        </div>
+    </div>
+
+    <div class="ai-result-card card">
+        {% if result.success %}
+        <div class="ai-result-header">
+            <div class="ai-orb">🤖</div>
+            <div>
+                <div class="ai-result-title">Bugungi tahlil tayyor</div>
+                <div class="ai-result-meta">Sizning bugungi vazifalaringiz va maqsadlaringiz asosida</div>
+            </div>
+        </div>
+        <div class="ai-result-body">{{ result.response|linebreaksbr }}</div>
+        <div class="ai-actions">
+            <a href="{% url 'task_create' %}" class="btn btn-primary">+ Vazifa yaratish</a>
+            <a href="{% url 'ai_productivity' %}" class="btn btn-secondary">🚀 Samaradorlik</a>
+        </div>
+        {% else %}
+        <div class="alert alert-error">
+            ❌ Xato yuz berdi: {{ result.error }}<br>
+            <small>Gemini API key va model sozlamalarini tekshiring.</small>
+        </div>
+        <div class="ai-actions">
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Dashboard</a>
+            <a href="{% url 'ai_chat' %}" class="btn btn-primary">AI chat</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

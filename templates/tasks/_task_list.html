@@ -1,0 +1,46 @@
+{% if tasks %}
+<div class="task-list">
+    {% for task in tasks %}
+    <div class="task-item {% if task.status == 'completed' %}completed{% endif %}" id="task-item-{{ task.id }}">
+        <div class="task-check {% if task.status == 'completed' %}completed{% endif %} task-complete-btn"
+            data-task-id="{{ task.id }}">
+            {% if task.status == 'completed' %}✓{% endif %}
+        </div>
+        <div class="task-content">
+            <div class="task-title {% if task.status == 'completed' %}completed-text{% endif %} task-complete-btn"
+                data-task-id="{{ task.id }}" style="cursor:pointer;">
+                {{ task.title }}
+            </div>
+            <div class="task-meta">
+                <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                <span class="badge badge-outline">{{ task.get_category_display }}</span>
+                {% if task.due_date %}
+                <span class="task-date {% if task.is_overdue %}overdue{% endif %}">
+                    📅 {{ task.due_date|date:"d.m.Y" }}
+                    {% if task.due_time %}({{ task.due_time|time:"H:i" }}){% endif %}
+                </span>
+                {% endif %}
+                {% if task.goal %}
+                <span style="font-size:11px; color:#6C63FF; font-weight:600;">🎯 {{ task.goal.title|truncatechars:20
+                    }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="task-actions">
+            <button type="button" class="btn btn-secondary btn-sm task-edit-btn"
+                data-task-id="{{ task.id }}">✏️</button>
+            <button type="button" class="btn btn-secondary btn-sm task-delete-btn"
+                data-task-id="{{ task.id }}">🗑️</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <span class="empty-state-icon">📋</span>
+    <div class="empty-state-title">Vazifalar yo'q</div>
+    <div class="empty-state-text">Sizda hali hech qanday vazifa mavjud emas. Yangi vazifa qo'shish uchun yuqoridagi
+        tugmani bosing.</div>
+    <button type="button" class="btn btn-primary task-add-btn">+ Vazifa qo'shish</button>
+</div>
+{% endif %}

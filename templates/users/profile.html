@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil - AI Planner{% endblock %}
+{% block header_title %}👤 Profil{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="align-items:start;">
+    <!-- Profil ma'lumotlari -->
+    <div class="card">
+        <div style="text-align:center; margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid #E5E7EB;">
+            {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="Avatar" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:12px;">
+            {% else %}
+                <div style="width:80px; height:80px; background:linear-gradient(135deg, #667eea, #764ba2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; color:white; font-weight:700; margin:0 auto 12px;">
+                    {{ user.username|first|upper }}
+                </div>
+            {% endif %}
+            <h2 style="font-size:20px; font-weight:700;">{{ user.get_full_name|default:user.username }}</h2>
+            <div style="color:#6B7280; font-size:14px;">{{ user.email }}</div>
+            <div style="font-size:12px; color:#9CA3AF; margin-top:4px;">
+                Ro'yxatdan o'tgan: {{ user.date_joined|date:"d.m.Y" }}
+            </div>
+        </div>
+
+        <!-- Statistika -->
+        <div class="grid-2" style="gap:12px; margin-bottom:20px;">
+            <div style="text-align:center; padding:16px; background:#EEF0FF; border-radius:10px;">
+                <div style="font-size:24px; font-weight:700; color:#6C63FF;">{{ total_tasks }}</div>
+                <div style="font-size:12px; color:#6B7280;">Jami vazifalar</div>
+            </div>
+            <div style="text-align:center; padding:16px; background:#EEFAF4; border-radius:10px;">
+                <div style="font-size:24px; font-weight:700; color:#27AE60;">{{ completed_tasks }}</div>
+                <div style="font-size:12px; color:#6B7280;">Bajarildi</div>
+            </div>
+            <div style="text-align:center; padding:16px; background:#EFF8FF; border-radius:10px;">
+                <div style="font-size:24px; font-weight:700; color:#3498DB;">{{ total_goals }}</div>
+                <div style="font-size:12px; color:#6B7280;">Maqsadlar</div>
+            </div>
+            <div style="text-align:center; padding:16px; background:#FFF9E6; border-radius:10px;">
+                <div style="font-size:24px; font-weight:700; color:#F39C12;">{{ completed_goals }}</div>
+                <div style="font-size:12px; color:#6B7280;">Maqsad bajarildi</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profilni tahrirlash -->
+    <div class="card">
+        <h3 class="card-title" style="margin-bottom:20px;">✏️ Profilni tahrirlash</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Ism</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Familiya</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bio</label>
+                {{ form.bio }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">🖼️ Rasm</label>
+                {{ form.avatar }}
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">⏰ Ish boshlanishi</label>
+                    {{ form.work_start_time }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">⏰ Ish tugashi</label>
+                    {{ form.work_end_time }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">🌐 Til</label>
+                {{ form.preferred_language }}
+            </div>
+            <div style="display:flex; justify-content:flex-end;">
+                <button type="submit" class="btn btn-primary">💾 Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

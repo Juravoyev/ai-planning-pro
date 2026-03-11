@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}O'chirish - AI Planner{% endblock %}
+
+{% block content %}
+<div style="max-width:480px; margin:0 auto;">
+    <div class="card" style="text-align:center; padding:40px;">
+        <div style="font-size:56px; margin-bottom:20px;">🗑️</div>
+        <h2 style="margin-bottom:10px;">Vazifani o'chirish</h2>
+        <p style="color:#6B7280; margin-bottom:8px;">Quyidagi vazifani o'chirmoqchimisiz?</p>
+        <div style="background:#F8F9FD; padding:16px; border-radius:10px; margin-bottom:24px;">
+            <strong>{{ task.title }}</strong>
+        </div>
+        <p style="color:#E74C3C; font-size:13px; margin-bottom:24px;">⚠️ Bu amalni qaytarib bo'lmaydi!</p>
+        <form method="post" style="display:flex; gap:10px; justify-content:center;">
+            {% csrf_token %}
+            <a href="{% url 'task_list' %}" class="btn btn-secondary">← Bekor qilish</a>
+            <button type="submit" class="btn btn-danger">🗑️ Ha, o'chirish</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

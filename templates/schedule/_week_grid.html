@@ -1,0 +1,34 @@
+{% load schedule_tags %}
+<!-- Haftalik grid -->
+<div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <h3 style="font-size:15px;font-weight:700;">🗓️ Haftalik Ko'rinish</h3>
+    </div>
+    <div style="overflow-x:auto;">
+        <div class="week-grid-table" style="min-width:700px;">
+            <!-- Header -->
+            <div class="wgt-time-cell" style="background:#F8F9FD;font-size:11px;color:#9CA3AF;font-weight:600;">Vaqt</div>
+            {% for day in days_order %}
+            <div class="wgt-head-cell {% if day == today_key %}wgt-today{% endif %}">
+                {{ days_uz|get_item:day|slice:":2" }}<br>
+                <span style="font-size:11px;font-weight:400;color:#9CA3AF;">{{ days_uz|get_item:day }}</span>
+            </div>
+            {% endfor %}
+
+            <!-- Soatlar -->
+            {% for hour in hours %}
+            <div class="wgt-time-cell">{{ hour|stringformat:"02d" }}:00</div>
+            {% for day in days_order %}
+            <div class="wgt-cell {% if day == today_key %}wgt-cell-today{% endif %}">
+                {% for s in grid|get_item:day|get_item:hour %}
+                <div class="wgt-event" data-id="{{ s.id }}" style="background:{{ s.color_value }};" title="{{ s.title }} | {{ s.start_time|time:'H:i' }}–{{ s.end_time|time:'H:i' }}">
+                    {{ s.icon }} {{ s.title|truncatechars:12 }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+

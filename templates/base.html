@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Planner{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+
+<body>
+
+    {% if user.is_authenticated %}
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🧠</div>
+                <div class="logo-text">
+                    <strong>AI Planner</strong>
+                    <span>PRO</span>
+                </div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <span class="nav-section-label">Asosiy</span>
+            <a href="{% url 'dashboard' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-text">Dashboard</span>
+            </a>
+            <a href="{% url 'task_list' %}"
+                class="nav-item {% if 'task' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-check-square"></i></span><span class="nav-text">Vazifalar</span>
+            </a>
+            <a href="{% url 'kanban' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'kanban' %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-columns"></i></span><span class="nav-text">Kanban Taxtasi</span>
+            </a>
+
+            <span class="nav-section-label" style="margin-top:8px;">Rejalashtirish</span>
+            <a href="{% url 'schedule' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'schedule' %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-calendar-week"></i></span><span class="nav-text">My
+                    Schedule</span>
+            </a>
+            <a href="{% url 'goal_list' %}"
+                class="nav-item {% if 'goal' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-bullseye"></i></span><span class="nav-text">Maqsadlar</span>
+            </a>
+            <a href="{% url 'habits' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'habits' %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-fire"></i></span><span class="nav-text">Odatlar</span>
+            </a>
+
+            <span class="nav-section-label" style="margin-top:8px;">Vositalar</span>
+            <a href="{% url 'focus' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'focus' %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-brain"></i></span><span class="nav-text">Diqqat Rejimi</span>
+            </a>
+            <a href="{% url 'analytics' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-chart-bar"></i></span><span class="nav-text">Tahlil</span>
+            </a>
+            <a href="{% url 'ai_chat' %}"
+                class="nav-item {% if 'ai' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-robot"></i></span><span class="nav-text">AI Maslahat</span>
+            </a>
+
+            <span class="nav-section-label" style="margin-top:8px;">Hisob</span>
+            <a href="{% url 'profile' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                <span class="nav-icon"><i class="fas fa-user-circle"></i></span><span class="nav-text">Profil</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="Avatar" class="user-avatar">
+                {% else %}
+                <div class="user-avatar-placeholder">{{ user.username|first|upper }}</div>
+                {% endif %}
+                <div style="overflow:hidden;">
+                    <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="user-email">{{ user.email }}</div>
+                </div>
+            </div>
+            <a href="{% url 'logout' %}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Chiqish</a>
+        </div>
+    </div>
+
+    <div class="main-wrapper" id="mainWrapper">
+        <header class="top-header">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+            <div class="header-title">{% block header_title %}AI Planner{% endblock %}</div>
+            <div class="header-actions">
+                <a href="{% url 'task_create' %}" class="btn btn-primary btn-sm task-add-btn"><i
+                        class="fas fa-plus"></i> Vazifa</a>
+            </div>
+        </header>
+
+        <!-- MESSAGES — Toast style, auto dismiss -->
+        {% if messages %}
+        <div class="messages-container" id="messagesContainer">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} fade-in" id="alert-{{ forloop.counter }}">
+                <span>{{ message }}</span>
+                <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Reusable Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Vazifa</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div id="modalBody" class="modal-body">
+                <!-- Form will be loaded here -->
+                <div style="text-align:center; padding:20px;">
+                    <div class="loading-spinner"></div>
+                    <p>Yuklanmoqda...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="auth-wrapper">
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} fade-in">
+                <span>{{ message }}</span>
+                <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

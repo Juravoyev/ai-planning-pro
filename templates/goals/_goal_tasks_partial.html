@@ -1,0 +1,31 @@
+{% if tasks %}
+{% for task in tasks %}
+<div class="task-item" id="goal-task-item-{{ task.id }}" style="margin-bottom:8px;">
+    <div class="task-check {% if task.status == 'completed' %}completed{% endif %} task-complete-btn"
+        data-task-id="{{ task.id }}">
+        {% if task.status == 'completed' %}✓{% endif %}
+    </div>
+    <div class="task-content">
+        <div class="task-title {% if task.status == 'completed' %}completed-text{% endif %} task-complete-btn"
+            data-task-id="{{ task.id }}" style="cursor:pointer;">
+            {{ task.title }}
+        </div>
+        <div class="task-meta">
+            <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+            {% if task.due_date %}<span>📅 {{ task.due_date|date:"d.m.Y" }}</span>{% endif %}
+        </div>
+    </div>
+    <div class="task-actions">
+        <button type="button" class="btn btn-secondary btn-sm task-edit-btn" data-task-id="{{ task.id }}">✏️</button>
+        <button type="button" class="btn btn-secondary btn-sm task-delete-btn" data-task-id="{{ task.id }}">🗑️</button>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state" style="padding:30px 20px;">
+    <div style="font-size:36px;">📋</div>
+    <div style="font-size:14px; margin-top:8px; color:#9CA3AF;">Hali vazifa yo'q</div>
+    <button type="button" class="btn btn-primary btn-sm task-add-btn" data-goal-id="{{ goal.id }}"
+        style="margin-top:12px;">+ Vazifa qo'shish</button>
+</div>
+{% endif %}

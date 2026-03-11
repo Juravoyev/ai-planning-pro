@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} maqsad - AI Planner{% endblock %}
+{% block header_title %}{{ action }} maqsad{% endblock %}
+
+{% block content %}
+<div style="max-width:600px; margin:0 auto;">
+    <div class="page-header">
+        <h1 class="page-title">{{ action }} maqsad</h1>
+        <a href="{% url 'goal_list' %}" class="btn btn-secondary">← Orqaga</a>
+    </div>
+    <div class="card">
+        {% include 'goals/_goal_form_inner.html' %}
+    </div>
+</div>
+{% endblock %}

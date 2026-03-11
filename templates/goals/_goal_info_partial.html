@@ -1,0 +1,33 @@
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+    <div>
+        <div style="font-size:13px; color:#9CA3AF; margin-bottom:4px;">{{ goal.get_category_display }}</div>
+        <h2 style="font-size:22px; font-weight:700;">{{ goal.title }}</h2>
+    </div>
+    <span class="badge badge-{{ goal.status }}">{{ goal.get_status_display }}</span>
+</div>
+
+{% if goal.description %}
+<p style="color:#6B7280; margin-bottom:16px; line-height:1.6;">{{ goal.description }}</p>
+{% endif %}
+
+<!-- Progress -->
+<div style="margin-bottom:16px;">
+    <div class="goal-progress-label">
+        <span style="font-weight:600;">Progress</span>
+        <span style="font-weight:700; color:#6C63FF;">{{ goal.progress }}%</span>
+    </div>
+    <div class="progress-bar-wrapper" style="height:12px;">
+        <div class="progress-bar-fill" style="width:{{ goal.progress }}%;"></div>
+    </div>
+</div>
+
+<!-- Progress yangilash -->
+<form id="goalProgressForm" action="{% url 'goal_update_progress' goal.id %}" method="post">
+    {% csrf_token %}
+    <div style="display:flex; align-items:center; gap:12px;">
+        <input type="range" id="progressInput" name="progress" min="0" max="100" value="{{ goal.progress }}"
+            style="flex:1;">
+        <span id="progressValue" style="font-weight:600; min-width:45px;">{{ goal.progress }}%</span>
+        <button type="submit" class="btn btn-primary btn-sm">Yangilash</button>
+    </div>
+</form>

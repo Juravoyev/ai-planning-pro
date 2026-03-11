@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Suhbat tarixi - AI Planner{% endblock %}
+{% block header_title %}📜 Suhbat tarixi{% endblock %}
+
+{% block content %}
+<div class="ai-page-shell ai-single-column">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Suhbat tarixi</h1>
+            <p class="page-subtitle">Oldingi AI tavsiyalarni ko'rib chiqish va qayta foydalanish uchun.</p>
+        </div>
+        <div class="ai-actions">
+            <a href="{% url 'ai_chat' %}" class="btn btn-primary">🤖 Yangi suhbat</a>
+            <a href="{% url 'ai_daily_plan' %}" class="btn btn-secondary">📋 Kunlik reja</a>
+        </div>
+    </div>
+
+    {% if conversations %}
+    <div class="ai-timeline">
+        {% for conv in conversations %}
+        <article class="card ai-history-card">
+            <div class="ai-history-top">
+                <span class="badge badge-pending">{{ conv.get_advice_type_display }}</span>
+                <span class="ai-history-date">{{ conv.created_at|date:"d.m.Y H:i" }}</span>
+            </div>
+            <div class="ai-thread">
+                <div class="ai-thread-row user">
+                    <div class="ai-thread-avatar user">👤</div>
+                    <div class="ai-thread-bubble user">{{ conv.user_message }}</div>
+                </div>
+                <div class="ai-thread-row">
+                    <div class="ai-thread-avatar">🤖</div>
+                    <div class="ai-thread-bubble">{{ conv.ai_response|linebreaksbr }}</div>
+                </div>
+            </div>
+            {% if conv.tokens_used %}
+            <div class="ai-token-note">🔢 {{ conv.tokens_used }} token ishlatildi</div>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="empty-state-icon">💬</span>
+        <div class="empty-state-title">Suhbat tarixi yo'q</div>
+        <div class="empty-state-text">AI bilan birinchi suhbatingizni boshlang!</div>
+        <a href="{% url 'ai_chat' %}" class="btn btn-primary">🤖 Suhbat boshlash</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

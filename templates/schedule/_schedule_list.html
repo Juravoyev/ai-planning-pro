@@ -1,0 +1,72 @@
+{% load schedule_tags %}
+<!-- Jadvallar ro'yxati + qo'shish -->
+<div class="card" style="margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <h3 style="font-size:15px;font-weight:700;">📋 Mening Doimiy Jadvallarim</h3>
+        <button onclick="openAddModal()" class="btn btn-primary" style="font-size:13px;padding:8px 16px;">+ Jadval Qo'shish</button>
+    </div>
+
+    {% if schedules %}
+    <div style="display:flex;flex-direction:column;gap:12px;">
+        {% for s in schedules %}
+        {% with s.color_value as col %}
+        <div class="sch-card {% if not s.is_active %}sch-paused{% endif %}" id="scd{{ s.id }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:44px;height:44px;border-radius:12px;background:{{ col }}22;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">{{ s.icon }}</div>
+                    <div>
+                        <div style="font-size:15px;font-weight:700;color:#2D2D3A;">{{ s.title }}</div>
+                        <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">{{ s.description|default:"Tavsif yo'q" }}</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button onclick="ajaxToggleSchedule({{ s.id }}, this)"
+                        class="btn btn-secondary btn-sm"
+                        data-active="{% if s.is_active %}true{% else %}false{% endif %}">
+                        {% if s.is_active %}⏸{% else %}▶️{% endif %}
+                    </button>
+                    <button onclick="openEditModal({{ s.id }},'{{ s.title|escapejs }}','{{ s.type }}','{{ s.icon }}','{{ s.start_time|time:'H:i' }}','{{ s.end_time|time:'H:i' }}','{{ s.location|escapejs }}','{{ s.description|escapejs }}','{{ s.color }}','{{ s.days }}')" class="btn btn-secondary btn-sm">✏️</button>
+                    <button type="button" onclick="ajaxDeleteSchedule({{ s.id }})" class="btn btn-secondary btn-sm" style="color:#E74C3C;">🗑️</button>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;">
+                <div style="background:#F8F9FD;border-radius:8px;padding:10px;">
+                    <div style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;margin-bottom:4px;">⏰ Vaqt</div>
+                    <div style="font-weight:700;font-size:14px;color:#2D2D3A;">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</div>
+                    <div style="font-size:11px;color:#9CA3AF;">{{ s.dur }} daqiqa</div>
+                </div>
+                <div style="background:#F8F9FD;border-radius:8px;padding:10px;">
+                    <div style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;margin-bottom:4px;">📍 Manzil</div>
+                    <div style="font-weight:600;font-size:13px;color:#2D2D3A;">{{ s.location|default:"—" }}</div>
+                </div>
+                <div style="background:#F8F9FD;border-radius:8px;padding:10px;">
+                    <div style="font-size:11px;color:#9CA3AF;font-weight:600;text-transform:uppercase;margin-bottom:4px;">🔄 Takror</div>
+                    <div style="font-weight:600;font-size:13px;color:#2D2D3A;">{{ s.days_list|length }} kun/hafta</div>
+                </div>
+            </div>
+
+            <!-- Kunlar -->
+            <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
+                {% for day in days_order %}
+                <span style="padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;
+                    {% if day in s.days_list %}background:{{ col }}22;color:{{ col }};border:1.5px solid {{ col }}44;
+                    {% else %}background:#F3F4F6;color:#9CA3AF;border:1.5px solid #E5E7EB;{% endif %}">
+                    {{ days_uz|get_item:day|slice:":2" }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:40px;">
+        <div style="font-size:48px;margin-bottom:12px;">📅</div>
+        <div style="font-size:16px;font-weight:600;color:#2D2D3A;margin-bottom:8px;">Jadval yo'q</div>
+        <div style="font-size:14px;color:#9CA3AF;margin-bottom:16px;">Birinchi jadvalingizni qo'shing</div>
+        <button onclick="openAddModal()" class="btn btn-primary">+ Jadval Qo'shish</button>
+    </div>
+    {% endif %}
+</div>
+
