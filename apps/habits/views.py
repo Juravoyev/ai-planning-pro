@@ -80,15 +80,24 @@ def habits_partials(request):
 def habit_create(request):
     name = request.POST.get('name', '').strip()
     icon = request.POST.get('icon', '💪').strip() or '💪'
+
+    # Davomiylik (daqiqa)
+    try:
+        duration_minutes = int(request.POST.get('duration_minutes', 30))
+        if duration_minutes < 1:
+            duration_minutes = 1
+    except (ValueError, TypeError):
+        duration_minutes = 30
+
     if name:
-        Habit.objects.create(user=request.user, name=name, icon=icon)
+        Habit.objects.create(user=request.user, name=name, icon=icon, duration_minutes=duration_minutes)
         if _is_ajax(request):
             return JsonResponse({'success': True, 'message': "✅ '" + name + "' odati qo'shildi!"})
         messages.success(request, "✅ '" + name + "' odati qo'shildi!")
         return redirect('habits')
 
     if _is_ajax(request):
-        return JsonResponse({'success': False, 'error': 'Odat nomi bo‘sh bo‘lishi mumkin emas.'}, status=400)
+        return JsonResponse({'success': False, 'error': "Odat nomi bo'sh bo'lishi mumkin emas."}, status=400)
     return redirect('habits')
 
 

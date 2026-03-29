@@ -7,6 +7,10 @@ class Habit(models.Model):
     name = models.CharField(max_length=200, verbose_name="Odat nomi")
     icon = models.CharField(max_length=10, default='💪')
     streak = models.IntegerField(default=0, verbose_name="Streak")
+    duration_minutes = models.PositiveIntegerField(
+        default=30,
+        verbose_name="Davomiylik (daqiqa)"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

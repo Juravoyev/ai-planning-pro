@@ -36,6 +36,24 @@
                 <span onclick="document.querySelector('input[name=icon]').value='{{ emoji }}'" style="font-size:1.5rem;cursor:pointer;padding:6px;border-radius:8px;background:#F3F4F6;transition:all .15s;" onmouseover="this.style.background='#EEF0FF'" onmouseout="this.style.background='#F3F4F6'">{{ emoji }}</span>
                 {% endfor %}
             </div>
+
+            <!-- YANGI: Davomiylik -->
+            <div class="form-group">
+                <label class="form-label">⏱ Davomiylik (daqiqa) *</label>
+                <input class="form-input"
+                       name="duration_minutes"
+                       type="number"
+                       min="1"
+                       max="480"
+                       placeholder="Masalan: 30"
+                       value="30"
+                       required
+                       style="max-width:140px;">
+                <small style="color:#9CA3AF;font-size:12px;margin-top:4px;display:block;">
+                    Bu odat bilan qancha daqiqa shug'ullanasiz?
+                </small>
+            </div>
+
             <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
                 <button type="button" onclick="document.getElementById('addModal').classList.remove('open')" class="btn btn-secondary">Bekor</button>
                 <button type="submit" class="btn btn-primary">🔥 Yaratish</button>
@@ -88,74 +106,37 @@
     margin-left: auto;
 }
 .day-btn-today.day-done {
-    background: rgba(6,214,160,.15);
+    background: rgba(6,214,160,.2);
     border-color: #06d6a0;
     color: #06d6a0;
-}
-
-/* Modal - schedule dan import */
-.sch-modal-bg {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.5);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-.sch-modal-bg.open { display: flex; }
-.sch-modal {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    width: 100%;
-    max-width: 440px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.2);
-}
-.sch-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #F3F4F6;
 }
 </style>
 
 <script>
 async function refreshHabitsPartials() {
-    const stats = document.getElementById('habitsStats');
-    const list = document.getElementById('habitsList');
-    if (!stats && !list) return;
-
-    const res = await fetch('/habits/partials/', {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    });
+    const res = await fetch('/habits/partials/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
     const data = await res.json();
-    if (!data.success) return;
-    if (stats) stats.innerHTML = data.stats_html;
-    if (list) list.innerHTML = data.list_html;
+    if (data.success) {
+        document.getElementById('habitsStats').innerHTML = data.stats_html;
+        document.getElementById('habitsList').innerHTML = data.list_html;
+    }
 }
 
-function toggleHabit(habitId, dateStr, btn) {
-    fetch('/habits/toggle/' + habitId + '/', {
+async function toggleHabit(habitId, dateStr, btn) {
+    const csrfToken = getCookie('csrftoken');
+    const formData = new FormData();
+    formData.append('date', dateStr);
+
+    const res = await fetch(`/habits/toggle/${habitId}/`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': getCookie('csrftoken'),
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: 'date=' + dateStr
-    })
-    .then(r => r.json())
-    .then(async data => {
-        if (!data.success) return;
+        headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData,
+    });
+    const data = await res.json();
+    if (data.success) {
         if (window.showToast) window.showToast(data.done ? '✅ Bajarildi' : '⏸ Bekor qilindi', 'info');
         await refreshHabitsPartials();
-    });
+    }
 }
 
 function getCookie(name) {
